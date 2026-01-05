@@ -20,7 +20,7 @@ knitr::opts_chunk$set(echo = TRUE)
 This assignment is a walkthough of using the virutal machine to run a shiny app. Once you have your VM up and running you can navigate the filesystem and find the file app.R under "Distributed Class Material". This app performs the Bayesian calculation we discussed in class, namely what is the probability of having covid given cold-like symptoms.
 
 
-## Question 1: Baye's rule   
+## Question 1: Bayes' rule   
 **The calculation uses Bayes rule and expresses relationships between conditional probabilities.**
 
 ### 1A: What is the conditional probability that we are trying to calculate? Write this in words and symbols, as best you can.
