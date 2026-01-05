@@ -107,3 +107,10 @@ Exercise (same groups): What is chance?
 - Describe an event that occurred recently where you could describe the outcome as having a "chance" component. Explain other possible outcomes which may have occurred instead. Do you think the event that did occur was unlikely?
 - Can you come up with a physical explanation for the event? What would you need to know to have accurately predicted the outcome? Would it ever be possible to know enough to forecast the outcome among the options you described?
 - Now consider how you could determine what the probability of the outcome was. Describe the experiment you might do to determine this.
+
+
+Start your VM
+=========================================================
+- url: https://eemb174.lsit.ucsb.edu/
+- in Terminal pane: `git clone https://github.com/srproulx/EEMB174_2026` 
+- To refresh git in future use: https://bit.ly/EEMB174RStudioSetup
