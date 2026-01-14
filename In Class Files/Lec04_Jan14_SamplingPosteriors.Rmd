@@ -166,6 +166,8 @@ Here is an example where we check the binomial probability of our data if pw=0.5
 dbinom(data$Ws,size=data$Ts,prob=0.5)
 ```
 
+
+Now put in the likelihood function here. Remember, we have to combine the data and the proposed parameter. Because we are creating a table of possible parameter values, we want to substitue in each of those parameter values in a row-by-row fashion.
 ```{r}
 
 posterior_table <- tibble(p_w_proposed=seq(from=0, to=1, by=0.01))%>%
