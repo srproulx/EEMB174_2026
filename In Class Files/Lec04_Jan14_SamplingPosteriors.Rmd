@@ -19,7 +19,7 @@ library(rethinking)
 # How to describe and make use of your osterior probability distribution
 We've already seen how we can use Bayesian updating to approximate a posterior distribution using the "grid approximation" method. There are multiple ways to generate a posterior distribution, you could do the exact math (often statistics courses focus on this method), use a grid approximation, approximate everything with normal distributions (this is the quadratic approximation), or use MCMC methods to sample the posterior without ever really defining it (I know, it sounds magical). 
 
-Later in the course, we will use these MCMC methods and these involve having random samples from the poserior. For now, we are going to learn how to use `R` to sample from a posterior even if we did not generate it via MCMC methods. 
+Later in the course, we will use these MCMC methods and these involve having random samples from the posterior. For now, we are going to learn how to use `R` to sample from a posterior even if we did not generate it via MCMC methods. 
 
 Today's objectives:  
 * Refresh our memory of the Bayesian algorithm using the globe tossing example.
@@ -193,8 +193,6 @@ We can quantify the distribution, and see that the mean and median are close to 
 Now we want to see what might look like if it came from our posterior distribution. This means that we first pick a value of `p_w` from the sampled values of `p_w_proposed` and then use our "sampling distribution", i.e. the likelihood model, to generate data.
 
 ```{r}
- 
-
 posterior_predictive_data <- tibble(p_w=samples_globe_tossing$p_w_proposed) %>%
   mutate(data_post = rbinom(n(),size=9,prob=p_w),
          data_median = rbinom(n(),size=9,prob=globe_toss_stats$median))  
@@ -235,4 +233,7 @@ ggplot(data=posterior_predictive_data , aes(x=data_post)) +
   labs(x="Number of Ws",
        y="density")
 ```
+
+## Check your understanding-
+Now consider what would happen if we had many more observations of this globe, say 600 observations of land, and 900 observations of water. Re-run the analysis, including the posterior predictive plot. What differences do you see? 
 
