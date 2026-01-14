@@ -152,13 +152,24 @@ dist_quant <- function(vec_name){
 
 ##  Quantifying our grid approximation of globe tossing 
 
-Here is the code to create a grid approximation of the posterior probability density for the parameter `p_w` in the globe tossing example. The data are 9 tosses with 6 observations of water.
+Here is the code to create a grid approximation of the posterior probability density for the parameter `p_w` in the globe tossing example, but without the likelihood function filled in. The data are 9 tosses with 6 observations of water.
 
 ```{r}
 data=tibble(Ws=6,Ts=9)
 
+```
+
+So, we want to use our binomial function 'dbinom' and tell it that there are 6 Ws and a total of 9 draws.
+
+Here is an example where we check the binomial probability of our data if pw=0.5 (This is just an example to show how to use the 'dbinom' function)
+```{r}
+dbinom(data$Ws,size=data$Ts,prob=0.5)
+```
+
+```{r}
+
 posterior_table <- tibble(p_w_proposed=seq(from=0, to=1, by=0.01))%>%
-  mutate( likelihood= dbinom(data$Ws,size=data$Ts,prob=p_w_proposed),
+  mutate( likelihood= FILLINTHELIKELIHOOD,
           prior=1/n(),
           raw_posterior = likelihood * prior , 
           posterior = raw_posterior/sum(raw_posterior))
