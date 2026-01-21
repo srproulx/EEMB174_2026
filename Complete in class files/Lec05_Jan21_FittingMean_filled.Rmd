@@ -37,7 +37,7 @@ In RMarkdown we can use LaTeX to typeset equations. A nice intro to LaTeX is her
 I'll recreate the description on page 77. 
 We start typesetting a LaTeX equation with the "\$\$" symbol. The symbol "~" can be generated with the `\sim` command: 
 $$
-y_i $\sim$ \mathrm{Normal}(\mu_i, \sigma)
+y_i \sim \mathrm{Normal}(\mu_i, \sigma)
 $$
 Math symbols in greek are generally produced with `\lettername`. 
 
