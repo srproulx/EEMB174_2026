@@ -30,9 +30,12 @@ data("foxes")
 d <- as_tibble(foxes) 
 
 # Put standardized values of the three potential predictors in their own column.
-d$F <- standardize(d$avgfood)
-d$A <- standardize(d$area)
-d$G <- standardize(d$groupsize)
+d<-mutate(d,
+          F=standardize(avgfood),
+          A=standardize(area),
+          G=standardize(groupsize))
+
+
 ```
 
 You can view the tibble before and after the standardization to make sure it worked. You already know View() can do this, but you can also *Ctrl-click* the dataframe variable in the code or press *F2* when the text cursor is on the variable. (Doing these on a function will also take you to the source code of the function. This is a nice way to see exactly where a function comes from and what it does.)
@@ -47,7 +50,7 @@ d
 Let's have a look at the data. We're plotting fox weight on the y-axis and territory area on the x-axis. Since area has been standardized, a value $A=0$ indicates the mean area in the dataset, so foxes on the left are in smaller than average territories, and foxes on the right are in larger than average territories. We'll also color the points by groupsize (non-standardized) and can see that larger groups also tend to be on the right. 
 
 ```{r, eval=FALSE}
-ggplot(data = d, aes(x = A, y = weight, group = groupsize, color = groupsize)) +
+ggplot(data = d, aes(x = A, y = weight, group = G, color = G)) +
   geom_point()
 ```
 
