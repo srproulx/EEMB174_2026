@@ -186,9 +186,9 @@ summarised.samples.m6.8 <- group_by(samples.m6.8,index) %>%
 
 ```{r}
 # take only the 20 data points in the middle that include both treated and untreated plants so we can see what is going on more clearly.
-ggplot(filter(summarised.samples.m6.8,index<20), aes(x=index,y=res.h1))+
+ggplot(filter(summarised.samples.m6.8,index>40 & index<60), aes(x=index,y=res.h1))+
   geom_point(color="red")  +
-  geom_point(data=filter(summarised.samples.m6.7,index<20), color="green")
+  geom_point(data=filter(summarised.samples.m6.7,index>40 & index<60), color="green")
   
 ```
 
