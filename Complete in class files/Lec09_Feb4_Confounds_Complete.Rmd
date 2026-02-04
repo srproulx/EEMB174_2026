@@ -120,7 +120,9 @@ model with treatment and fungus
 ```{r}
 m6.7 <- quap(
     alist(
-    YOURCODEHERE
+      h1 ~ dnorm(mu,sigma),
+      mu <- h0*p ,
+      p <- a + bt*treatment + bf*fungus,
         a ~ dlnorm( 0 , 0.2 ) ,
         bt ~ dnorm( 0.5 , 0.5 ),
         bf ~ dnorm( 0 , 0.5 ),
@@ -141,7 +143,9 @@ model with treatment only
 ```{r} 
 m6.8 <- quap(
     alist(
-      YOURCODEHERE,
+      h1 ~ dnorm(mu,sigma),
+      mu <- h0*p ,
+      p <- a + bt*treatment ,
         a ~ dlnorm( 0 , 0.2 ),
         bt ~ dnorm( 0 , 0.5 ),
         sigma ~ dexp( 1 )
