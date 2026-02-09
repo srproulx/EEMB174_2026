@@ -177,7 +177,7 @@ m7.2 <- quap(
     alist(
         brain_std ~ dnorm( mu ,sigma ),
         mu <- a + b[1]*mass_std + b[2]*mass_std^2,
-        log(sigma) <- log_sigma ,
+        dlog(sigma) <- log_sigma ,
         a ~ dnorm( 0.5 , 1 ),
         b ~ dnorm( 0 , 10 ),
         log_sigma ~ dnorm( 0 , 1 )
@@ -380,7 +380,7 @@ ggplot(data=d, aes(x=mass_std,y=brain_std)) +
 ### overfitting fish
 ```{r}
 
-load("../Midterm Assessment/ClownFishData.RData")
+load("../Midterm/ClownFishDataFixed.RData")
 data<- data %>% 
   distinct()%>%
   rowid_to_column("index")
