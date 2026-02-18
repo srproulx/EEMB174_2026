@@ -55,7 +55,7 @@ The model is:
 $$
 \mathrm{log\_gdp} \sim \mathrm{Normal}(\mu,\sigma) \\
 \mu = a + b * \mathrm{rugged\_std} \\
-a \sim \mathrm{Normal}(1,1) \\
+a \sim \mathrm{Normal}(8,3) \\
 b \sim \mathrm{Normal}(0,1) \\
 \sigma \sim \mathrm{Exponential}(1)
 $$
