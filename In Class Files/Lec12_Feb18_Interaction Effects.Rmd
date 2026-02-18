@@ -63,21 +63,13 @@ $$
 ```{r}
 m7.1 <-
   quap(alist(
-    log_gdp ~ dnorm( mu , sigma ),
-    mu <- a+b*rugged_std,
-    a  ~ dnorm(1,1),
-    b  ~ dnorm(0,1),
-    sigma ~ dexp(1)
+   CODE HERE
   ), data=filter(d,cont_africa==1) )
 
 
 m7.2 <-
   quap(alist(
-    log_gdp  ~ dnorm( mu , sigma ),
-    mu <- a+b*rugged_std,
-    a  ~ dnorm(1,1),
-    b  ~ dnorm(0,1),
-    sigma ~ dexp(1)
+   CODE HERE
   ), data=filter(d,cont_africa==0) )
 
 
