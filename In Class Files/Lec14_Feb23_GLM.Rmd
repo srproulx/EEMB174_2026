@@ -10,7 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(rethinking)
 source("../helper.R")
-set_ulam_cmdstan(TRUE)
+cmdstanr::set_cmdstan_path("~/.cmdstan/cmdstan-2.34.1")
+options(rethinking_cmdstan = TRUE)
 ```
 
 # Today's objectives:  
@@ -72,7 +73,7 @@ m.HC.logit <- ulam(alist(
   delHC ~ dnorm(0,0.1),
   delAZ ~ dnorm(0,0.05)),
   data=select(outcomes,death,total,HC_indicator,AZ_indicator),
-  chains=4,cores=4, warmup = 2000, iter=2000
+  chains=4,cores=4, warmup = 2000, iter=4000, cmdstan = FALSE
 )
 
 precis(m.HC.logit )
@@ -183,9 +184,60 @@ summary.sim.LACases <- group_by(sim.LACases,day) %>%
 ggplot(summary.sim.LACases, aes(x=day,y=mean.cases))+
   geom_point()+
   geom_errorbar( aes(ymin=lower.cases,ymax=upper.cases))+
-  geom_point(data=LACases, aes(x=day,y=newcases), color="red")
+  geom_point(data=LACases, aes(x=day,y=newcases), color="red")+
+  xlab("day")+ylab("cases")
   
 ```
+
+The poisson model captures the trend in growth of covid cases, but 
+```{r}
+# optional but recommended: center day for nicer geometry/intercept meaning
+LACases <- LACases %>%
+  mutate(
+    day_c = day - mean(day),
+    log_mean_cases = log(mean(newcases))
+  )
+
+m.LACases.nb <- ulam(
+  alist(
+    newcases ~ dgampois(mu, exp(log_scale)),
+    log(mu) <- a + b * day_c,
+
+    a ~ dnorm(log_mean_cases, 2),
+    b ~ dnorm(0, 0.2),
+
+    # exp(log_scale) ensures positivity; larger scale = more variance
+    log_scale ~ dnorm(0, 1)
+  ),
+  data = LACases,
+  cores = 4, chains = 4, iter = 3000
+)
+
+precis(m.LACases.nb)
+```
+
+
+```{r}
+# posterior predictive simulations
+sim.LACases.nb <- sim_df(m.LACases.nb, data = LACases)
+
+# summarize by day (same structure as your Poisson PPC)
+summary.sim.LACases.nb <- group_by(sim.LACases.nb, day) %>%
+  summarise(
+    mean.cases  = mean(newcases),
+    lower.cases = quantile(newcases, 0.1),
+    upper.cases = quantile(newcases, 0.9),
+    .groups = "drop"
+  )
+
+# plot: PPC summaries + observed data in red
+ggplot(summary.sim.LACases.nb, aes(x = day, y = mean.cases)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lower.cases, ymax = upper.cases)) +
+  geom_point(data = LACases, aes(x = day, y = newcases), color = "red")+
+  xlab("day")+ylab("cases")
+```
+
 
 ### Simulated Binomial regression
 
