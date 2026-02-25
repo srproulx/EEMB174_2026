@@ -191,7 +191,7 @@ ggplot(summary.sim.LACases, aes(x=day,y=mean.cases))+
 
 The poisson model captures the trend in growth of covid cases, but 
 ```{r}
-# optional but recommended: center day for nicer geometry/intercept meaning
+
 LACases <- LACases %>%
   mutate(
     day_c = day - mean(day),
@@ -206,8 +206,7 @@ m.LACases.nb <- ulam(
     a ~ dnorm(log_mean_cases, 2),
     b ~ dnorm(0, 0.2),
 
-    # exp(log_scale) ensures positivity; larger scale = more variance
-    log_scale ~ dnorm(0, 1)
+     log_scale ~ dnorm(0, 1)
   ),
   data = LACases,
   cores = 4, chains = 4, iter = 3000
@@ -221,7 +220,7 @@ precis(m.LACases.nb)
 # posterior predictive simulations
 sim.LACases.nb <- sim_df(m.LACases.nb, data = LACases)
 
-# summarize by day (same structure as your Poisson PPC)
+
 summary.sim.LACases.nb <- group_by(sim.LACases.nb, day) %>%
   summarise(
     mean.cases  = mean(newcases),
@@ -230,7 +229,7 @@ summary.sim.LACases.nb <- group_by(sim.LACases.nb, day) %>%
     .groups = "drop"
   )
 
-# plot: PPC summaries + observed data in red
+
 ggplot(summary.sim.LACases.nb, aes(x = day, y = mean.cases)) +
   geom_point() +
   geom_errorbar(aes(ymin = lower.cases, ymax = upper.cases)) +
