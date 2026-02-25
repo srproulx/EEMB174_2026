@@ -1,0 +1,32 @@
+---
+title: "Homework 7"
+author: "EEMB 174-274"
+output: pdf_document
+header-includes:
+  - \usepackage{color}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rethinking)
+#source("../helper.R")
+```
+# Bayesian Statistical Modeling Winter 2026
+# Homework 7, Week 8
+
+*When is homework due?* This assignment is due on Monday, 3/2/2026. 
+
+
+Complete these problems from the end of chapter 
+
+## 11E1
+
+
+## 11E2
+
+
+## 11E3
+
+
+## 11M1
