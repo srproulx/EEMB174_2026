@@ -192,7 +192,6 @@ ggplot(ran_eff_sim_out_sum,aes(x=tank,y=meansurv))+
 
 ```
 
-ADD IN A COMPARISON TO THE FULL POOLING PREDICTIONS
 
 
 ### Converting to the model with no variance between tanks
