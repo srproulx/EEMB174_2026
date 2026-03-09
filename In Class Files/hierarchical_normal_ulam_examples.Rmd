@@ -14,6 +14,13 @@ source("../helper.R")
 ```
 
 
+
+```{r}
+cmdstanr::set_cmdstan_path("~/.cmdstan/cmdstan-2.34.1")
+```
+
+
+
 # Today's objectives:  
 * describe hierarchical models with normal likelihoods
 * See how we can write equivalent models with the same likelihood (but different priors)
@@ -40,6 +47,10 @@ mystery_data <- tibble(index=seq(1:100),replicate=rep(1:10,10),treat=rep(rep(1:2
          delta_obs=rnorm(n(),mean=0,sd=sigma_obs)) %>%
   left_join(group_effect)%>%
   mutate(y=mu_treat+delta_obs+delta_rep)
+
+mystery_data_complete<- mystery_data
+
+mystery_data<- select(mystery_data,y,treat,replicate)
 ```
 
 
@@ -63,12 +74,12 @@ We can fit this model and observe the parameters from the posterior, it does a g
 ```{r}
 m_normal_H1 <- ulam(
   alist(
-    y ~ dnorm(mu,sigma_obs),
+    y ~ dnorm(mu,sigma),
     mu <-mu_rep[replicate],
     mu_rep[replicate] ~ dnorm(mubar,sigma_rep),
     mubar ~ dnorm(10,10),
     sigma_rep ~ dexp(1),
-    sigma_obs ~ dexp(1)
+    sigma ~ dexp(1)
     ),
   data=mystery_data, chains=4, cores=10, iter=10000, log_lik = TRUE
   )
@@ -95,12 +106,12 @@ We can fit this model and observe the parameters from the posterior, it does a g
 ```{r}
 m_normal_H2 <- ulam(
   alist(
-    y ~ dnorm(mu,sigma_obs),
+    y ~ dnorm(mu,sigma),
     mu <-mubar+Delta_mu[replicate],
     Delta_mu[replicate] ~ dnorm(0,sigma_rep),
     mubar ~ dnorm(10,10),
     sigma_rep ~ dexp(1),
-    sigma_obs ~ dexp(1)
+    sigma ~ dexp(1)
     ),
   data=mystery_data, chains=4, cores=10, iter=10000, log_lik = TRUE
   )
@@ -109,16 +120,16 @@ m_normal_H2 <- ulam(
 ```{r}
 precis(m_normal_H2,depth=2)
 ```
-We can go one more step to abstrac further and allow us to sample from a unit normal:
+We can go one more step to abstract further and allow us to sample from a unit normal:
 ```{r}
 m_normal_H3 <- ulam(
   alist(
-    y ~ dnorm(mu,sigma_obs),
+    y ~ dnorm(mu,sigma ),
     mu <-mubar+Delta_mu[replicate]*sigma_rep,
     Delta_mu[replicate] ~ dnorm(0,1),
     mubar ~ dnorm(10,10),
     sigma_rep ~ dexp(1),
-    sigma_obs ~ dexp(1)
+    sigma  ~ dexp(1)
     ),
   data=mystery_data, chains=4, cores=10, iter=10000, log_lik = TRUE
   )
@@ -141,6 +152,9 @@ y_i &\sim \text{Normal}(\mu_{r[i]}, \sigma_{\text{obs}}) \\
 \sigma_{\text{rep}} &\sim \text{Exponential}(1) \\
 \sigma_{\text{treat}} &\sim \text{Exponential}(1)
 $$
+
+
+
 ```{r}
 treat_lookup <- mystery_data %>%
   distinct(replicate, treat) %>%
@@ -184,12 +198,13 @@ precis(m_normal_nested,depth=2)
 
 
 ```{r}
-m_normal_nested_treat1 <- ulam(
+m_normal_nested_treat <- ulam(
   alist(
     y ~ dnorm(mu, sigma),
     mu <- mu_treat[treat] + delta_rep[replicate] ,
     delta_rep[replicate]  ~ dnorm(0, sigma_rep),
-    mu_treat[treat] ~ dnorm(10, 10),
+    mu_treat[treat] ~ dnorm(mubar, sigma_treat),
+    mubar ~ dnorm(10,10),
     sigma ~ dexp(1),
     sigma_rep ~ dexp(1),
     sigma_treat ~ dexp(1)
@@ -203,6 +218,95 @@ m_normal_nested_treat1 <- ulam(
 ```
 
 ```{r}
-precis(m_normal_nested_treat1,depth=2)
+precis(m_normal_nested_treat,depth=2)
 ```
+
+
+
+
+# data in nested clusters/replicates
+
+```{r}
+set.seed(42)
+
+# parameters
+n_cluster <- 15
+n_rep <- 3
+n_obs_per_rep <- 100
+
+mu_bar <- 10
+sigma_cluster <- 5
+sigma_rep <- 1
+sigma_obs <- 3
+
+# cluster-level effects
+cluster_effect <- tibble(
+  cluster = 1:n_cluster,
+  delta_cluster = rnorm(n_cluster, 0, sigma_cluster)
+)
+
+# replicate-level effects nested within clusters
+rep_effect <- tibble(
+  cluster = rep(1:n_cluster, each = n_rep),
+  replicate = 1:(n_cluster * n_rep),
+  delta_rep = rnorm(n_cluster * n_rep, 0, sigma_rep)
+)
+
+# observation-level data
+sim_data <- tibble(
+  index = 1:(n_cluster * n_rep * n_obs_per_rep),
+  replicate = rep(rep_effect$replicate, each = n_obs_per_rep)
+) %>%
+  left_join(rep_effect, by = "replicate") %>%
+  left_join(cluster_effect, by = "cluster") %>%
+  mutate(
+    mu = mu_bar + delta_cluster + delta_rep,
+    y = rnorm(n(), mu, sigma_obs)
+  )
+
+myster_data_cluster <- select(sim_data,y,replicate,cluster)
+
+```
+
+
+```{r}
+ggplot(sim_data, aes(x = factor(replicate), y = y)) +
+  geom_boxplot() +
+  facet_wrap(~cluster, scales = "free_x") +
+  labs(
+    x = "Replicate",
+    y = "Observed value (y)",
+    title = "Replicates nested within clusters"
+  ) +
+  theme_bw()
+```
+
+
+```{r}
+m_normal_clustered <- ulam(
+  alist(
+    y ~ dnorm(mu, sigma),
+    mu<- mubar + delta_cluster[cluster]+delta_rep[replicate],
+    delta_cluster[cluster] ~ dnorm(0,sigma_cluster),
+    delta_rep[replicate]  ~ dnorm(0, sigma_rep),
+    mubar ~ dnorm(10, 10),
+    sigma ~ dexp(1),
+    sigma_rep ~ dexp(1),
+    sigma_cluster ~ dexp(1)
+  ),
+  data = myster_data_cluster,
+  chains = 4,
+  cores = 4,
+  iter = 2000,
+  log_lik = TRUE
+)
+```
+
+
+```{r}
+precis(m_normal_clustered,depth=2)
+```
+
+
+
 
