@@ -94,9 +94,9 @@ precis(m_normal_H1,depth=2)
 Another way of writing it is
 
 $$
-y_i \sim \text{Normal}(\mu_i,\sigma_{\text{obs}}) \\ 
-\mu_i = \bar{\mu} + \Delta_{\mu}_{\text{replicate}[i]}\\
- \Delta_{\mu}_{\text{r} \sim \text{Normal}(0, \sigma_{\text{rep}}) \\
+y_i \sim \text{Normal}(\mu_i,\sigma_{\text{obs}})\\
+\mu_i = \bar{\mu} + \Delta_{\mu \text{replicate}[i]}\\
+ \Delta_{\mu \text{r}} \sim \text{Normal}(0, \sigma_{\text{rep}}) \\
 \bar{\mu} \sim \text{Normal}(10,10)\\
 \sigma_{\text{rep}} \sim \text{Exponential}(1)
 $$
@@ -144,13 +144,13 @@ This is expressed as a multi-level hierarchical model.
 
 
 $$
-y_i &\sim \text{Normal}(\mu_{r[i]}, \sigma_{\text{obs}}) \\
-\mu_r &\sim \text{Normal}(\mu_{t[r]}, \sigma_{\text{rep}})  \\
-\mu_t &\sim \text{Normal}(\bar{\mu}, \sigma_{\text{treat}})  \\
-\bar{\mu} &\sim \text{Normal}(10,10) \\
-\sigma_{\text{obs}} &\sim \text{Exponential}(1) \\
-\sigma_{\text{rep}} &\sim \text{Exponential}(1) \\
-\sigma_{\text{treat}} &\sim \text{Exponential}(1)
+y_i \sim Normal(\mu_{ri}, \sigma_{obs})\\
+\mu_r \sim \text{Normal}(\mu_{t[r]}, \sigma_{\text{rep}})  \\
+\mu_t \sim \text{Normal}(\bar{\mu}, \sigma_{\text{treat}})  \\
+\bar{\mu} \sim \text{Normal}(10,10) \\
+\sigma_{\text{obs}} \sim \text{Exponential}(1) \\
+\sigma_{\text{rep}} \sim \text{Exponential}(1) \\
+\sigma_{\text{treat}} \sim \text{Exponential}(1)
 $$
 
 
