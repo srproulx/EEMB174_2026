@@ -1,0 +1,235 @@
+---
+title: "Midterm2026"
+author: "Stephen R. Proulx"
+date: "2026-02-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(rethinking)
+#source("../helper.R")
+
+``` 
+
+NOTE: This is just an example of complete code, the explanation answers are not included. 
+## Analysis Challenge (82 points)
+
+For this midterm exercise we will use data from this paper:  https://onlinelibrary.wiley.com/doi/10.1111/oik.07674 . We will use only a portion of their data, but our analysis will involve similar models to the ones discussed in the paper. You are free to read the paper or look to it for modeling inspiration, but you can complete this entire exercise without looking at the paper. 
+
+
+In this study, clown fish were observed in breeding groups associated with sea anemones. In the dataset, each row is an observation.
+
+The dataframe has 236 observations of 61 unique fish groups (labeled by Anemone_ID). Anemone size is taken to represent the food-richness of the area the fish live in, so anemone size might influence fish health and therefore fish reproductive output. 
+
+The dataset includes a treatment, which is that some of the groups of fish were fed additional food. The column "FedIndex" is 1 if the fish were not fed, and 2 if they were fed. The treatment was performed in the middle of the season, so that some clutches of eggs were produced before the treatment, and others were produced after the treatment. The column "PostTreatment" is 1 if the clutch was laid before the treatment and 2 if it was after. Note that fish in the FedIndex=1 category were never fed additional food, even if PostTreatment=2. 
+
+First clear your working environment and load the data.
+```{r}
+rm(list=ls())
+
+load("ClownFishData.RData")
+```
+
+You now have an object called "data" in your environment. Take a few minutes to inspect it.
+
+
+data had two rows of each data item.
+
+
+
+### (1) Standardize and plot
+We will be using anemone_area as a predictor. Since it is a continuous variable, it's a good idea to standardize it. Name the standardized version of this column "AA".
+
+Standardize your data columns using the "standardize" command. 
+```{r}
+d2<-distinct(data)
+```
+
+[answer]
+```{r}
+d2<-mutate(data,
+           AA = standardize(anemone_area),
+           FS = standardize(female_size),
+           MS = standardize(male_size),
+           EL = standardize(Eggs_Laid))
+```
+
+
+Make a figure showing the relationship between anemone area and number of eggs laid. Describe how this changes our data values
+
+```{r}
+ggplot( d2 , aes(x=AA ,y=EL )) +geom_point()
+
+```
+
+### (2) Plotting a prior
+You will construct a linear regression model for the number of eggs laid with the anemone area (standardized) as the predictor. The model is
+
+$$
+\mathrm{Eggs\_Laid} \sim \mathrm{Normal(\mu,\sigma)}\\
+\mu = a + b * \mathrm{AA} \\
+a \sim \mathrm{Normal(0,?)} \\
+b \sim \mathrm{Normal(0,2)} \\
+\sigma \sim \mathrm{Exponential(1)} \\
+$$
+Choose values of the standard deviation for the parameter a (the ? in the formula above). Plot the prior with the data. Change the values until you are satisfied that this is a reasonable prior. Explain how you settled on the value that you used.
+
+
+
+
+
+```{r}
+m.AA.eggs.laid <- 
+  quap( alist(
+    EL ~ dnorm(mu,sigma),
+    mu <- a + b * AA  ,
+    a ~ dnorm(0,2),
+    b ~ dnorm(0,2),
+    sigma ~ dexp(1) ),
+    data=d2)
+
+
+```
+
+
+```{r}
+prior.samples<-extract.prior(m.AA.eggs.laid,prior=TRUE,n=20) %>% as_tibble()%>%view()
+ 
+ggplot(d2 , aes(x=AA,y=EL) )+
+  geom_point(color="blue")+
+  geom_abline(intercept=prior.samples$a, slope = prior.samples$b)+
+  xlim(c(-5,5))+
+  ylim(c(-15,15))
+```
+
+### (3) Linear regression model
+Construct a *quap* model for the data and use `precis` to summarize the output.
+
+
+
+```{r}
+m.AA.eggs.laid <- 
+  quap( alist(
+    EL ~ dnorm(mu,sigma),
+    mu <- a + b * AA  ,
+    a ~ dnorm(0,2),
+    b ~ dnorm(0,2),
+    sigma ~ dexp(1) ),
+    data=d2)
+
+
+precis(m.AA.eggs.laid)
+```
+
+
+### (4) Compare to a model with no predictor
+Now re-write your quap model, but remove the linear regression predictor. In other words, just model the mean and variance of the number of eggs laid. Explain how and why the values for sigma differ between the linear regression model and the model with no predictor.
+
+```{r}
+m.mean.eggs.laid <- 
+  quap( alist(
+    EL ~ dnorm(mu,sigma),
+    mu <- a   ,
+    a ~ dnorm(0,.5),
+    sigma ~ dexp(1) ),
+    data=d2)
+
+
+precis(m.mean.eggs.laid)
+```
+
+### (5) Plot the linear regression lines
+Use `link_df` to create samples of the *quap* fit. To do this, create a dataframe with evenly spaced out values of AA. Plot the mu values on a graph with the data. 
+
+
+```{r}
+post.samples<-extract.samples(m.AA.eggs.laid,prior=TRUE,n=20) %>% as_tibble()
+ 
+ggplot(d2 , aes(x=AA,y=EL) )+
+  geom_point(color="blue")+
+  geom_abline(intercept=post.samples$a, slope = post.samples$b)
+```
+
+
+### (6) List one "big world" explanation that could explain the differences between the data and the predicted values.
+
+
+
+### (7) Looking at the effect of feeding the clown fish
+
+Now we are going to look at the data broken down by whether or not the fish were fed, and before/after they were fed. Create four subsets of the data based on FedIndex (1 or 2) and Post Treatment (1 or 2). Create a separte quap model for each new subset of the data and report the parameter values. 
+
+
+
+
+
+
+```{r}
+d2.notreat.before <- filter(d2, FedIndex==1,PostTreatment==1)
+d2.notreat.after <- filter(d2, FedIndex==1,PostTreatment==2)
+d2.treat.before <- filter(d2, FedIndex==2,PostTreatment==1)
+d2.treat.after <- filter(d2, FedIndex==2,PostTreatment==2)
+```
+
+
+```{r}
+m.notreat.before <- 
+  quap( alist(
+    EL ~ dnorm(mu,sigma),
+    mu <- a + b * AA   ,
+    a ~ dnorm(0,2),
+    b ~ dnorm(0,2),
+    sigma ~ dexp(1) ),
+    data=d2.notreat.before)
+
+
+precis(m.notreat.before)
+
+m.notreat.after <- 
+  quap( alist(
+    EL ~ dnorm(mu,sigma),
+    mu <- a + b * AA   ,
+    a ~ dnorm(0,2),
+    b ~ dnorm(0,2),
+    sigma ~ dexp(1) ),
+    data=d2.notreat.after)
+
+
+precis(m.notreat.after)
+```
+
+
+```{r}
+m.treat.before <- 
+  quap( alist(
+    EL ~ dnorm(mu,sigma),
+    mu <- a + b * AA   ,
+    a ~ dnorm(0,2),
+    b ~ dnorm(0,2),
+    sigma ~ dexp(1) ),
+    data=d2.treat.before)
+
+
+precis(m.treat.before)
+
+m.treat.after <- 
+  quap( alist(
+    EL ~ dnorm(mu,sigma),
+    mu <- a + b * AA   ,
+    a ~ dnorm(0,2),
+    b ~ dnorm(0,2),
+    sigma ~ dexp(1) ),
+    data=d2.treat.after)
+
+
+precis(m.treat.after)
+```
+
+
+### (8) Interpret the fitted parameter values. How does feeding affect the clown fish reproduction?
+
